@@ -126,4 +126,4 @@ class Database:
         user = await self.col.find_one({'id': int(id)})
         return user.get('c_link')
 
-db = Database(MONGODB_URI, "VJVideoPlayerBot")
+db = Database(MONGODB_URI, "KeralaPrimeTv")
