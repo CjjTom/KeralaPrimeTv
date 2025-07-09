@@ -1,9 +1,3 @@
-# KeralaCaptain Bot Full Code (Updated with Advanced Features)
-# Make sure you have updated 'info.py' with:
-# LINK_URL = "https://yourdomain.in"
-# LOG_CHANNEL = <your_log_channel_id>
-# ADMIN = <your_admin_id>
-
 import random
 import requests
 import humanize
@@ -13,7 +7,7 @@ from pyrogram import Client, filters, enums
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from info import LOG_CHANNEL, LINK_URL, ADMIN
 from plugins.database import checkdb, db, get_count, get_withdraw, record_withdraw, record_visit
-from urllib.parse import quote_plus, urlencode
+from urllib.parse import urlencode
 from TechVJ.util.file_properties import get_name, get_hash, get_media_file_size
 from TechVJ.util.human_readable import humanbytes
 
@@ -61,7 +55,7 @@ async def stream_start(client, message):
     log_msg = await client.send_cached_media(chat_id=LOG_CHANNEL, file_id=fileid)
     params = {'u': user_id, 'w': str(log_msg.id), 's': '0', 't': '0'}
     link = await encode(urlencode(params))
-    encoded_url = f"{LINK_URL}?Cj_Tom={link}"
+    encoded_url = f"{LINK_URL}?KeralaCaptain={link}"
     rm = InlineKeyboardMarkup([[InlineKeyboardButton("🖇️ Open Link", url=encoded_url)]])
     await message.reply_text(f"<code>{encoded_url}</code>", reply_markup=rm)
 
@@ -124,7 +118,15 @@ async def update_account(client, message):
 async def handle_links(client, message):
     if not message.text.startswith(LINK_URL):
         return
-    link_part = message.text[len(LINK_URL + "?KeralaCaptain="):].strip()
+
+    # Handle both ?KeralaCaptain= and ?Cj_Tom=
+    if "?KeralaCaptain=" in message.text:
+        link_part = message.text.split("?KeralaCaptain=")[-1].strip()
+    elif "?Cj_Tom=" in message.text:
+        link_part = message.text.split("?Cj_Tom=")[-1].strip()
+    else:
+        return await message.reply("**Invalid or unsupported link format.**")
+
     try:
         original = await decode(link_part)
         u, user_id, id, sec, th = original.split("=")
@@ -132,12 +134,17 @@ async def handle_links(client, message):
         id = id.replace("&s", "")
         sec = sec.replace("&t", "")
         if user_id == str(message.from_user.id):
-            await message.reply_text(f"<code>{message.text}</code>", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🖇️ Open Link", url=message.text)]]))
+            await message.reply_text(
+                f"<code>{message.text}</code>",
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🖇️ Open Link", url=message.text)]])
+            )
         else:
             params = {'u': message.from_user.id, 'w': id, 's': sec, 't': th}
             new_link = await encode(urlencode(params))
             encoded_url = f"{LINK_URL}?KeralaCaptain={new_link}"
-            await message.reply_text(f"<code>{encoded_url}</code>", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🖇️ Open Link", url=encoded_url)]]))
+            await message.reply_text(
+                f"<code>{encoded_url}</code>",
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🖇️ Open Link", url=encoded_url)]])
+            )
     except:
         await message.reply("**Invalid or corrupted link.**")
-    
