@@ -61,7 +61,7 @@ async def stream_start(client, message):
     log_msg = await client.send_cached_media(chat_id=LOG_CHANNEL, file_id=fileid)
     params = {'u': user_id, 'w': str(log_msg.id), 's': '0', 't': '0'}
     link = await encode(urlencode(params))
-    encoded_url = f"{LINK_URL}?KeralaCaptain={link}"
+    encoded_url = f"{LINK_URL}?Cj_Tom={link}"
     rm = InlineKeyboardMarkup([[InlineKeyboardButton("🖇️ Open Link", url=encoded_url)]])
     await message.reply_text(f"<code>{encoded_url}</code>", reply_markup=rm)
 
