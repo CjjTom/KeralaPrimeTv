@@ -105,14 +105,23 @@
             </div>
             
             <video id="player" class="w-full" playsinline controls poster="{{thumbnail_url}}">
-                {% if file_url %}
-                <source src="{{file_url}}" type="video/mp4" size="480" title="480p">
+                {% if file_url_360 %}
+                <source src="{{file_url_360}}" type="video/mp4" size="360" title="360p">
                 {% endif %}
-                {% if file_url_two %}
-                <source src="{{file_url_two}}" type="video/mp4" size="720" title="720p">
+                {% if file_url_420 %}
+                <source src="{{file_url_420}}" type="video/mp4" size="420" title="420p">
                 {% endif %}
-                {% if file_url_three %}
-                <source src="{{file_url_three}}" type="video/mp4" size="1080" title="1080p">
+                {% if file_url_480 %}
+                <source src="{{file_url_480}}" type="video/mp4" size="480" title="480p">
+                {% endif %}
+                {% if file_url_540 %}
+                <source src="{{file_url_540}}" type="video/mp4" size="540" title="540p">
+                {% endif %}
+                {% if file_url_720 %}
+                <source src="{{file_url_720}}" type="video/mp4" size="720" title="720p">
+                {% endif %}
+                {% if file_url_1080 %}
+                <source src="{{file_url_1080}}" type="video/mp4" size="1080" title="1080p">
                 {% endif %}
             </video>
             
@@ -152,7 +161,18 @@
             ],
             settings: ['quality', 'speed'],
             keyboard: { focused: true, global: true },
-            autoplay: true
+            autoplay: true,
+            quality: {
+                default: {% if file_url_1080 %}1080{% elif file_url_720 %}720{% elif file_url_540 %}540{% elif file_url_480 %}480{% elif file_url_420 %}420{% else %}360{% endif %},
+                options: [
+                    {% if file_url_1080 %}{ value: 1080, label: '1080p HD' },{% endif %}
+                    {% if file_url_720 %}{ value: 720, label: '720p HD' },{% endif %}
+                    {% if file_url_540 %}{ value: 540, label: '540p' },{% endif %}
+                    {% if file_url_480 %}{ value: 480, label: '480p' },{% endif %}
+                    {% if file_url_420 %}{ value: 420, label: '420p' },{% endif %}
+                    {% if file_url_360 %}{ value: 360, label: '360p' }{% endif %}
+                ]
+            }
         });
 
         // Hide loading overlay when video is ready
@@ -210,4 +230,4 @@
         });
     </script>
 </body>
-</html>
+    </html>
