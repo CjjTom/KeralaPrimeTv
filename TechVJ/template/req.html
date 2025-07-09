@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <link rel="shortcut icon" href="https://i.ibb.co/qJyZWCv/20230629-081948-0000.png" type="image/x-icon">
@@ -13,6 +14,9 @@
             background: linear-gradient(135deg, #000000 0%, #1a0000 100%);
             font-family: 'Inter', sans-serif;
             color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
         .navbar {
             background: linear-gradient(to right, #000000, #1a0000);
@@ -42,6 +46,7 @@
             width: 100%;
             padding: 0 15px;
             pointer-events: none;
+            z-index: 10;
         }
         .skip-btn {
             background: rgba(255, 0, 0, 0.7);
@@ -52,9 +57,31 @@
             padding: 6px 12px;
             pointer-events: auto;
             transition: all 0.3s;
+            cursor: pointer;
         }
         .skip-btn:hover {
             background: rgba(255, 0, 0, 0.9);
+        }
+        .plyr--video {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+        footer {
+            margin-top: auto;
+        }
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
+            display: none;
         }
     </style>
 </head>
@@ -64,72 +91,123 @@
         <a href="https://t.me/KeralaCaptain" target="_blank" class="telegram-btn text-white px-3 py-1 rounded">
             <i class="bi bi-telegram me-1"></i> Join Telegram
         </a>
-    </nav><div class="container mx-auto py-6 px-4">
-    <h2 class="text-center text-2xl font-semibold mb-4">{{file_name}}</h2>
+    </nav>
 
-    <div class="relative max-w-4xl mx-auto">
-        <video id="player" class="w-full" playsinline controls poster="{{thumbnail_url}}">
-            {% if file_url %}
-            <source src="{{file_url}}" type="video/mp4" size="480" title="480p">
-            {% endif %}
-            {% if file_url_two %}
-            <source src="{{file_url_two}}" type="video/mp4" size="720" title="720p">
-            {% endif %}
-            {% if file_url_three %}
-            <source src="{{file_url_three}}" type="video/mp4" size="1080" title="1080p">
-            {% endif %}
-        </video>
-        <div class="skip-overlay">
-            <button class="skip-btn" onclick="skip(-10)"><i class="bi bi-arrow-counterclockwise"></i> 10s</button>
-            <button class="skip-btn" onclick="skip(30)"><i class="bi bi-arrow-clockwise"></i> 30s</button>
+    <div class="container mx-auto py-6 px-4 flex-grow">
+        <h2 class="text-center text-2xl font-semibold mb-4">{{file_name}}</h2>
+
+        <div class="relative max-w-4xl mx-auto">
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="text-center">
+                    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500 mx-auto mb-3"></div>
+                    <p>Loading video...</p>
+                </div>
+            </div>
+            
+            <video id="player" class="w-full" playsinline controls poster="{{thumbnail_url}}">
+                {% if file_url %}
+                <source src="{{file_url}}" type="video/mp4" size="480" title="480p">
+                {% endif %}
+                {% if file_url_two %}
+                <source src="{{file_url_two}}" type="video/mp4" size="720" title="720p">
+                {% endif %}
+                {% if file_url_three %}
+                <source src="{{file_url_three}}" type="video/mp4" size="1080" title="1080p">
+                {% endif %}
+            </video>
+            
+            <div class="skip-overlay">
+                <button class="skip-btn" onclick="skip(-10)"><i class="bi bi-arrow-counterclockwise"></i> 10s</button>
+                <button class="skip-btn" onclick="skip(30)"><i class="bi bi-arrow-clockwise"></i> 30s</button>
+            </div>
+        </div>
+
+        <div class="disclaimer-box mt-6 text-sm">
+            ⚠️ <strong>Disclaimer:</strong> All videos are encrypted streaming only. Media is from third-party sources. Use at your own risk.
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="https://t.me/KeralaCaptain" target="_blank" class="telegram-btn px-4 py-2 rounded inline-block">
+                <i class="bi bi-telegram me-1"></i> Join Our Telegram Channel
+            </a>
         </div>
     </div>
 
-    <div class="disclaimer-box mt-6 text-sm">
-        ⚠️ <strong>Disclaimer:</strong> All videos are encrypted streaming only. Media is from third-party sources. Use at your own risk.
-    </div>
+    <footer class="bg-dark py-4">
+        <div class="text-center text-sm">
+            © <script>document.write(new Date().getFullYear())</script> CjTom — All Rights Reserved.<br>
+            <span class="text-xs text-gray-400">Encrypted Streaming • No Downloads</span>
+        </div>
+    </footer>
 
-    <div class="text-center mt-4">
-        <a href="https://t.me/KeralaCaptain" target="_blank" class="telegram-btn px-4 py-2 rounded">
-            <i class="bi bi-telegram me-1"></i> Join Our Telegram Channel
-        </a>
-    </div>
-</div>
+    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+    <script>
+        // Show loading overlay
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        loadingOverlay.style.display = 'flex';
+        
+        const player = new Plyr('#player', {
+            controls: [
+                'play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen'
+            ],
+            settings: ['quality', 'speed'],
+            keyboard: { focused: true, global: true },
+            autoplay: true
+        });
 
-<footer class="bg-dark py-4 mt-10">
-    <div class="text-center text-sm">
-        © <script>document.write(new Date().getFullYear())</script> CjTom — All Rights Reserved.<br>
-        <span class="text-xs text-gray-400">Encrypted Streaming • No Downloads</span>
-    </div>
-</footer>
+        // Hide loading overlay when video is ready
+        player.on('ready', () => {
+            loadingOverlay.style.display = 'none';
+            try {
+                player.play();
+            } catch (e) {
+                console.log('Autoplay prevented:', e);
+            }
+        });
 
-<script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
-<script>
-    const player = new Plyr('#player', {
-        controls: [
-            'play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen'
-        ],
-        settings: ['quality', 'speed'],
-        keyboard: { focused: true, global: true }
-    });
+        // Handle errors
+        player.on('error', () => {
+            loadingOverlay.style.display = 'none';
+            alert('Error loading video. Please try again later.');
+        });
 
-    function skip(seconds) {
-        const currentTime = player.currentTime;
-        player.currentTime += seconds;
-    }
-
-    // Right-click + Dev tools protection
-    document.addEventListener("contextmenu", e => e.preventDefault());
-    document.addEventListener("keydown", e => {
-        if (
-            e.key === 'F12' ||
-            (e.ctrlKey && e.shiftKey && e.key === 'I') ||
-            (e.ctrlKey && e.key === 'u')
-        ) {
-            e.preventDefault();
+        function skip(seconds) {
+            const currentTime = player.currentTime;
+            player.currentTime += seconds;
         }
-    });
-</script>
 
+        // Protection against right-click and dev tools
+        document.addEventListener("contextmenu", e => e.preventDefault());
+        document.addEventListener("keydown", e => {
+            if (
+                e.key === 'F12' ||
+                (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+                (e.ctrlKey && e.key === 'u') ||
+                (e.ctrlKey && e.shiftKey && e.key === 'J') ||
+                (e.ctrlKey && e.shiftKey && e.key === 'C')
+            ) {
+                e.preventDefault();
+                alert('Developer tools are disabled');
+            }
+        });
+
+        // Handle URL parameters for direct playback
+        document.addEventListener("DOMContentLoaded", function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const cjTomParam = urlParams.get('CJ_Tom');
+            
+            if (cjTomParam) {
+                // You'll need to implement your specific decoding logic here
+                // This is just a placeholder for the concept
+                try {
+                    const decodedParams = atob(cjTomParam);
+                    // Process decoded params to get file URLs
+                    // Then update the video sources accordingly
+                } catch (e) {
+                    console.error('Error decoding URL parameter:', e);
+                }
+            }
+        });
+    </script>
 </body>
 </html>
