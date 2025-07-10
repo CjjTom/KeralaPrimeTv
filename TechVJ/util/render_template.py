@@ -22,27 +22,25 @@ async def render_page(id, user, secid=None, thid=None, fourid=None, fiveid=None,
         '720': None,
         '1080': None
     }
-    
-    # Map input IDs to their respective qualities
+
     id_mapping = {
         '360': id,
         '420': secid,
         '480': thid,
         '540': fourid,
         '720': fiveid,
-        '1080': src  # Note: src is being repurposed here for 1080p
+        '1080': src
     }
-    
-    # Process each quality
+
     for quality, msg_id in id_mapping.items():
         if msg_id and msg_id != '0':
             try:
                 msg = await TechVJBot.get_messages(int(LOG_CHANNEL), int(msg_id))
             except:
                 msg = await TechVJBackUpBot.get_messages(int(LOG_CHANNEL), int(msg_id))
-                
+
             file_data = await get_file_ids(msg)
-            
+
             file_urls[f'file_url_{quality}'] = urllib.parse.urljoin(
                 STREAM_URL + "dl/",
                 f"{msg_id}/{urllib.parse.quote_plus(file_data.file_name)}?hash={file_data.unique_id[:6]}",
@@ -50,26 +48,24 @@ async def render_page(id, user, secid=None, thid=None, fourid=None, fiveid=None,
             quality_map[quality] = quality
         else:
             file_urls[f'file_url_{quality}'] = None
-    
-    # Determine the main file data to use for metadata
+
     if not file_data:
-        # Try to get any available file data
         for msg_id in [id, secid, thid, fourid, fiveid, src]:
             if msg_id and msg_id != '0':
                 try:
-                    msg = await TechVJBot.get_messages(int(LOG_CHANNEL), int(msg_id)
+                    msg = await TechVJBot.get_messages(int(LOG_CHANNEL), int(msg_id))
                 except:
-                    msg = await TechVJBackUpBot.get_messages(int(LOG_CHANNEL), int(msg_id)
+                    msg = await TechVJBackUpBot.get_messages(int(LOG_CHANNEL), int(msg_id))
                 file_data = await get_file_ids(msg)
                 if file_data:
                     break
-    
+
     if not file_data:
         raise InvalidHash("No valid file data found")
-    
+
     tag = file_data.mime_type.split("/")[0].strip()
     file_size = humanbytes(file_data.file_size)
-    
+
     if tag in ["document", "video", "audio"]:
         template_file = "TechVJ/template/req.html"
     else:
@@ -86,32 +82,29 @@ async def render_page(id, user, secid=None, thid=None, fourid=None, fiveid=None,
     file_name = remove_after_year(file_name_clean)
     link = await db.get_link(int(user))
     name = await db.get_name(int(user))
-    
-    # Prepare template context
+
     context = {
         "file_name": file_name,
         "file_size": file_size,
         "user_id": user,
         "link": link,
         "name": name,
-        "thumbnail_url": THUMBNAIL_URL  # Make sure THUMBNAIL_URL is defined in your info.py
+        "thumbnail_url": THUMBNAIL_URL
     }
-    
-    # Add all quality URLs to context
+
     context.update(file_urls)
-    
     return template.render(**context)
 
 
 def clean_file_name(file_name):
-    """Clean and format the file name."""
     file_name = re.sub(r"(_|\-|\.|\+)", " ", str(file_name)) 
     unwanted_chars = ['[', ']', '(', ')', '{', '}']
-    
+
     for char in unwanted_chars:
         file_name = file_name.replace(char, '')
-        
+
     return ' '.join(filter(lambda x: not x.startswith('@') and not x.startswith('http') and not x.startswith('www.') and not x.startswith('t.me'), file_name.split()))
+
 
 def remove_after_year(filename):
     match = re.search(r'\d{4}', filename)
